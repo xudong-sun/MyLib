@@ -7,20 +7,25 @@ namespace commons {
 		system("pause");
 	}
 
-	// similar join function as in python
 	template <typename T>
-	std::string join(std::vector<T> vec, std::string separator = " ") {
-		if (vec.size() == 0) return "";
+	void print(T v) {
+		std::cout << v << std::endl;
+	}
+
+	// similar join function as in python
+	template <typename _InIt>
+	std::string join(_InIt first, _InIt last, std::string separator = " ") {
+		if (first == last) return "";
 		std::stringstream ss;
-		ss << vec[0];
-		for (size_t i = 1; i < vec.size(); i++) ss << separator << vec[i];
+		ss << *first;
+		for (auto it = first + 1; it != last; it++) ss << separator << *it;
 		return ss.str();
 	}
 
 	// convert any type to std::string
 	// for any type that has no built-in operator<< with std::ostream, please first checkout helpers in "print_utils.h"
 	template <typename T>
-	std::string toString(T v) {
+	std::string toString(const T& v) {
 		std::stringstream ss;
 		ss << v;
 		return ss.str();
