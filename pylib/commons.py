@@ -6,15 +6,20 @@ def assure_dir(dir_):
     '''make sure dir_ exists'''
     if not dir_: return
     import os
-    if not os.path.exists(dir_): os.makedirs(dir_)
+    assert not os.path.isfile(dir_), '{} is a file'.format(dir_)
+    if not os.path.isdir(dir_): os.makedirs(dir_)
 
 def check_file_exists(file_):
-    '''assert file_ exists'''
+    '''assert file_ exists
+    file_ can be either a file or a directory
+    '''
     import os.path as osp
     assert osp.exists(file_), 'check failed: {} not exists'.format(file_)
 
 def check_file_extension(file_, valid_extensions):
-    '''check whether the extension of file_ is in valid_extensions'''
+    '''check whether the extension of file_ is in valid_extensions
+    extensions are case-insensitive
+    '''
     import os
     ext = os.path.splitext(file_)[1]
     for valid_ext in valid_extensions:
@@ -24,7 +29,12 @@ def check_file_extension(file_, valid_extensions):
 def remove_file(file_):
     '''remove a file if it exists'''
     import os
-    if os.path.exists(file_): os.remove(file_)
+    if os.path.isfile(file_): os.remove(file_)
+
+def remove_dir(dir_):
+    '''remove a directory if it exists'''
+    import os
+    if os.path.isdir(dir_): os.removedirs(dir_)
 
 def pickle_to_file(object_, file_):
     '''pickle object_ to file_'''
@@ -67,8 +77,8 @@ def wait_for_key_input(valid_keys=['']):
         else: print 'Valid keys are', valid_keys
     return key
 
-def get_logger():
-    '''return a logger registered with a StreamHandler
+def simple_logger():
+    '''return a simple logger registered with a StreamHandler
     '''
     import logging
     logger = logging.getLogger()
