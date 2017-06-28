@@ -8,10 +8,10 @@
 #
 # timestamp:    in the format %Y-%m-%d-%H-%M-%S or %Y-%m-%d
 #               files whose modified time later than this timestamp will be displayed
-# exclude_exts: a list of extensions separated by comma
+# exclude_exts: a list of extensions separated by space
 #               files with those extensions will NOT be displayed
 #
-# Example: python list_modified_files.py /root/dir 2016-09-29-12-00-00 --exclude_exts swp,tmp
+# Example: python list_modified_files.py /root/dir 2016-09-29-12-00-00 --exclude_exts swp tmp
 # ---------------------------------
 
 import sys, os, time, re, argparse
@@ -20,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('root_dir', help='root dir')
     parser.add_argument('timestamp', help='list modified files after "timestamp"')
-    parser.add_argument('--exclude_exts', help='excluded extensions', default=None)
+    parser.add_argument('--exclude_exts', nargs='+', help='excluded extensions', default=None)
     return parser.parse_args()
 
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     args = parse_args()
     directory = args.root_dir
     timestamp = args.timestamp
-    exclude_exts = [] if args.exclude_exts is None else args.exclude_exts.split(',')
+    exclude_exts = args.exclude_exts
     
     PRINT_TIME = lambda timestamp: time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))
     
