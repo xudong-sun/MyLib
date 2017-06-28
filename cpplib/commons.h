@@ -7,9 +7,15 @@ namespace commons {
 		system("pause");
 	}
 
+	// a print function that prints any number of arguments
 	template <typename T>
-	void print(T v) {
+	void print(const T& v) {
 		std::cout << v << std::endl;
+	}
+	template <typename T, typename... Types>
+	void print(const T& v, Types&&... args) {
+		std::cout << v << ' ';
+		print(std::forward<Types>(args)...);
 	}
 
 	// similar join function as in python
