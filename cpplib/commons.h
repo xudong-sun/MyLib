@@ -7,7 +7,7 @@ namespace commons {
 		system("pause");
 	}
 
-	// a print function that prints any number of arguments
+	// a group of overloaded print functions that is able to print any number of arguments using operator<<
 	template <typename T>
 	void print(const T& v) {
 		std::cout << v << std::endl;

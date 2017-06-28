@@ -10,7 +10,7 @@
 #include "commons.h"
 
 // print vectors, lists, forward_lists
-// This also works for nesting containers like std::vector<std::vector<T>>
+// This also works for nested containers like std::vector<std::vector<T>>
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
 	os << '[' << commons::join(vec.cbegin(), vec.cend(), ", ") << ']';
