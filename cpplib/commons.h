@@ -29,9 +29,10 @@ namespace commons {
 	}
 
 	// convert any type to std::string
+	// extends std::to_string function
 	// for any type that has no built-in operator<< with std::ostream, please first checkout helpers in "print_utils.h"
 	template <typename T>
-	std::string toString(const T& v) {
+	std::string to_string(const T& v) {
 		std::stringstream ss;
 		ss << v;
 		return ss.str();
