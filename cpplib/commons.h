@@ -24,7 +24,8 @@ namespace commons {
 		if (first == last) return "";
 		std::stringstream ss;
 		ss << *first;
-		for (auto it = first + 1; it != last; it++) ss << separator << *it;
+		auto it = first;
+		for (it++; it != last; it++) ss << separator << *it;
 		return ss.str();
 	}
 
