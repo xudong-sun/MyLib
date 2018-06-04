@@ -39,6 +39,8 @@ def remove_dir(dir_):
 def pickle_to_file(object_, file_):
     '''pickle object_ to file_'''
     import cPickle
+    import os
+    assure_dir(os.path.dirname(file_))
     with open(file_, 'wb') as fout: cPickle.dump(object_, fout)
 
 def pickle_from_file(file_):
