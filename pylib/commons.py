@@ -49,13 +49,14 @@ def pickle_from_file(file_):
     with open(file_, 'rb') as fin: object_ = cPickle.load(fin)
     return object_
 
-def generate_files_within_dir(root_dir, exts=None, FILTER="True"):
+def generate_files_within_dir(root_dir, exts=None, FILTER="True", followlinks=True):
     '''generator to yield all files with extension in exts, and filtered by FILTER
     exts: a collection of extensions, if None, any extension will be valid
     FILTER: additional filter
+    followlinks: whether to follow symbolic links
     '''
     import os
-    for cur_dir, dirs, files in os.walk(root_dir):
+    for cur_dir, dirs, files in os.walk(root_dir, followlinks=followlinks):
         for file_ in files:
             if (exts is None or check_file_extension(file_, exts)) and eval(FILTER):
                 yield os.path.join(cur_dir, file_)
