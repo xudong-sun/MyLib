@@ -5,6 +5,7 @@
 #include <list>
 #include <forward_list>
 #include <array>
+#include <deque>
 #include <set>
 #include <unordered_set>
 #include <map>
@@ -33,6 +34,11 @@ template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr) {
 	os << '(' << commons::join(arr.cbegin(), arr.cend(), ", ") << ')';
 	return os;
+}
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::deque<T>& deque) {
+  os << '[' << commons::join(deque.cbegin(), deque.cend(), ",") << ']';
+  return os;
 }
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& vec) {
