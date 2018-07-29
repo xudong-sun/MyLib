@@ -37,7 +37,7 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr) {
 }
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::deque<T>& deque) {
-  os << '[' << commons::join(deque.cbegin(), deque.cend(), ",") << ']';
+  os << '[' << commons::join(deque.cbegin(), deque.cend(), ", ") << ']';
   return os;
 }
 template <typename T>
