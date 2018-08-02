@@ -69,6 +69,18 @@ def md5sum(file_):
     assert osp.isfile(file_), 'md5sum error: {} not accessible or is not a file'.format(file_)
     with open(file_) as f: return hashlib.md5(f.read()).hexdigest()
 
+def get_git_hash():
+    '''get git hash of current git commit
+    '''
+    import subprocess
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+
+def get_timestamp():
+    '''get current timestamp in string format
+    '''
+    from datetime import datetime
+    return datetime.now().strftime('%Y_%m_%d_%H:%M:%S')
+
 def wait_for_key_input(valid_keys=['']):
     '''wait for user typing a specific set of keys
     valid_keys: list[str]
@@ -91,4 +103,21 @@ def simple_logger():
     logger.addHandler(stream_handler)
     logger.setLevel(logging.INFO)
     return logger
+
+class Timer(object):
+    '''A simple timer for calculating average speed
+    '''
+    import time
+    def __init__(self):
+        self.reset()
+    def tic(self):
+        self.start = time.time()
+    def toc(self):
+        self.time += time.time() - self.start
+        self.count += 1
+    def get(self):
+        return self.time / self.count
+    def reset(self):
+        self.time = 0
+        self.count = 0
 
