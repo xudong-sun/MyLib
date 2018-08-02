@@ -148,18 +148,24 @@ def random_scale_point_cloud(batch_data, scale_low=0.8, scale_high=1.25):
         batch_data[batch_index,:,:] *= scales[batch_index]
     return batch_data
 
-def shuffle_points(batch_data):
+def shuffle_points(batch_data, batch_label=None):
     """
     Shuffle orders of points in each point cloud -- changes FPS behavior.
     Use the same shuffling idx for the entire batch.
+    May optionally pass in the per-point label
     Input:
-      BxNxC array
+      BxNxC array, batch_data
+      BxN array, batch_label, optional
     Output:
-      BxNxC array
+      BxNxC array, shuffled batch_data
+      BxN, shuffled batch_label, if it is present
     """
     idx = np.arange(batch_data.shape[1])
     np.random.shuffle(idx)
-    return batch_data[:,idx,:]
+    if batch_label is None:
+        return batch_data[:,idx,:]
+    else:
+        return batch_data[:,idx,:], batch_label[:,idx]
 
 def random_point_dropout(batch_pc, labels=None, max_dropout_ratio=0.875):
     """
