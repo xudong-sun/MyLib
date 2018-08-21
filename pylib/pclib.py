@@ -213,14 +213,18 @@ def point_cloud_label_to_surface_voxel_label(point_cloud, label, res=0.02):
 # plot point cloud with mayavi.mlab
 #########################################
 
-def _draw_point_cloud(data, label, scale_factor=0.01):
+def _draw_point_cloud(data, label, scale_factor, color={}):
+    if color == {}:
+        color = {0: (0,1,1), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)}
     all_label = np.unique(label)
     for l in all_label:
         x = data[label == l]
-        color = tuple(np.random.random(3))
-        mlab.points3d(x[:,0], x[:,1], x[:,2], color=color, scale_factor=scale_factor)
+        c = color.get(l)
+        if c is None:
+            c = tuple(np.random.random(3))
+        mlab.points3d(x[:,0], x[:,1], x[:,2], color=c, scale_factor=scale_factor)
 
-def draw_point_cloud(data, subsample=None, scale_factor=0.01, title=''):
+def draw_point_cloud(data, subsample=None, size=1, title=''):
     """
     data: Nx3 numpy array
     subsample: number of subsampled input point cloud
@@ -228,21 +232,23 @@ def draw_point_cloud(data, subsample=None, scale_factor=0.01, title=''):
     if subsample is not None:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
-    mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=scale_factor)
+    mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=0.01*size)
     mlab.title(title)
     mlab.show()
 
-def draw_point_cloud_with_labels(data, label, subsample=None, scale_factor=0.01, title=''):
+def draw_point_cloud_with_labels(data, label, subsample=None, size=1, color={}, title=''):
     """
     data: Nx3 numpy array
     label: N, numpy array
     subsample: number of subsampled input point cloud
+    size: size of points
+    color: dict int->tuple(3)
     """
     if subsample is not None:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
         label = label[ids]
-    _draw_point_cloud(data, label, scale_factor)
+    _draw_point_cloud(data, label, 0.01*size, color=color)
     mlab.title(title)
     mlab.show()
 
