@@ -159,6 +159,9 @@ def timeit(freq=1, rep=1):
             if freq > 0 and self.count % freq == 0:
                 print("Called {}() {} times, average runtime = {} s".format(self.__name__, self.count, self.avg_time))
             return rv
+        def __get__(self, instance, owner):
+            from functools import partial
+            return partial(self.__call__, instance)
         @property
         def avg_time(self):
             return self.total / self.count
