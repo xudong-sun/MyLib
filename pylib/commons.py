@@ -89,7 +89,7 @@ def wait_for_key_input(valid_keys=['']):
     while True:
         key = raw_input()
         if key in valid_keys: break
-        else: print 'Valid keys are', valid_keys
+        else: print('Valid keys are ' + str(valid_keys))
     return key
 
 def simple_logger():
@@ -107,6 +107,7 @@ def simple_logger():
 class Timer(object):
     '''A simple timer for calculating average speed
     '''
+    global time
     import time
     def __init__(self):
         self.reset()
@@ -120,4 +121,46 @@ class Timer(object):
     def reset(self):
         self.time = 0
         self.count = 0
+
+def no_args_decorator(f):
+    """ A decorator for decorators
+    This decorator allows the decorated decorator used both in the form of @decorator(arguments) and @decorator.
+    In the second case, the default arguments will be applied.
+    The only restriction is that, the decorator cannot take a single callable as its arguments.
+    """
+    def g(*args, **kwargs):
+        if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+            return f()(args[0])  # second case
+        else:
+            return f(*args, **kwargs)  # first case
+    return g
+
+@no_args_decorator
+def timeit(freq=1, rep=1):
+    """ Decorator for calculating average runtime
+    freq: int, print average runtime after every `freq` calls to the original function
+          if freq=0, will never print automatically, but you can always call func.avg_time to check average runtime
+    rep: int, repeatedly call func `rep` times to calculate the average runtime. If rep > 1, this will override freq and set freq = rep
+    """
+    import time
+    if rep > 1: freq = rep
+    class decorator(object):
+        def __init__(self, func):
+            self.func = func
+            self.__name__ = func.__name__
+            self.total = 0.
+            self.count = 0
+        def __call__(self, *args, **kwargs):
+            start = time.time()
+            for _ in range(rep):
+                rv = self.func(*args, **kwargs)
+            self.total += time.time() - start
+            self.count += rep
+            if freq > 0 and self.count % freq == 0:
+                print("Called {}() {} times, average runtime = {} s".format(self.__name__, self.count, self.avg_time))
+            return rv
+        @property
+        def avg_time(self):
+            return self.total / self.count
+    return decorator
 
