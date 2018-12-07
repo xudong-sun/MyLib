@@ -104,6 +104,38 @@ def simple_logger():
     logger.setLevel(logging.INFO)
     return logger
 
+def cprint(x, maxlen=100):
+    """ print x in a concise way
+    """
+    import numpy as np
+    s = repr(x)
+    info = ''
+    def compress(s, sep=',', end=']'):
+        pos = s[:maxlen].rfind(sep)
+        s = s[:pos+1] + ' ... ' + end
+        return s
+    if len(s) > maxlen:
+        if isinstance(x, dict):
+            s = 'dict with keys ' + repr(x.keys())
+            if len(s) > maxlen:
+                s = compress(s)
+                info = 'number of keys = {}'.format(len(x.keys()))
+        elif isinstance(x, list):
+            s = compress(s)
+            info = 'list of length {}'.format(len(x))
+        elif isinstance(x, set):
+            s = compress(s, end='}')
+            info = 'set of length {}'.format(len(x))
+        elif isinstance(s, str):
+            s = s[:maxlen] + '...'
+            info = 'str of length {}'.format(len(x))
+        elif isinstance(x, np.ndarray):
+            s = compress(s)
+            info = 'np.ndarray of shape {}'.format(x.shape)
+    if len(info) > 0:
+        s += '\n' + info
+    print(s)
+
 class Timer(object):
     '''A simple timer for calculating average speed
     '''
@@ -146,8 +178,9 @@ def timeit(freq=1, rep=1):
     if rep > 1: freq = rep
     class decorator(object):
         def __init__(self, func):
+            from functools import update_wrapper
+            update_wrapper(self, func)
             self.func = func
-            self.__name__ = func.__name__
             self.total = 0.
             self.count = 0
         def __call__(self, *args, **kwargs):
