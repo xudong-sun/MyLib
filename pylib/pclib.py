@@ -233,7 +233,8 @@ def draw_point_cloud(data, subsample=None, size=1, title=''):
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
     mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=0.01*size)
-    mlab.title(title)
+    if title:
+        mlab.title(title)
     mlab.show()
 
 def draw_point_cloud_with_labels(data, label, subsample=None, size=1, color={}, title=''):
@@ -249,7 +250,8 @@ def draw_point_cloud_with_labels(data, label, subsample=None, size=1, color={}, 
         data = data[ids]
         label = label[ids]
     _draw_point_cloud(data, label, 0.01*size, color=color)
-    mlab.title(title)
+    if title:
+        mlab.title(title)
     mlab.show()
 
 
