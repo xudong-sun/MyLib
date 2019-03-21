@@ -126,12 +126,12 @@ def cprint(x, maxlen=100):
         elif isinstance(x, set):
             s = compress(s, end='}')
             info = 'set of length {}'.format(len(x))
-        elif isinstance(s, str):
-            s = s[:maxlen] + '...'
-            info = 'str of length {}'.format(len(x))
         elif isinstance(x, np.ndarray):
             s = compress(s)
             info = 'np.ndarray of shape {}'.format(x.shape)
+        elif isinstance(s, str):
+            s = s[:maxlen] + '...'
+            info = 'str of length {}'.format(len(x))
     if len(info) > 0:
         s += '\n' + info
     print(s)

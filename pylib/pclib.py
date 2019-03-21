@@ -1,5 +1,4 @@
 import numpy as np
-from mayavi import mlab
 
 
 #################################
@@ -209,49 +208,15 @@ def point_cloud_label_to_surface_voxel_label(point_cloud, label, res=0.02):
     return uvidx, uvlabel
 
 
-#########################################
-# plot point cloud with mayavi.mlab
-#########################################
+######################################
+# pcd utilities
+######################################
 
-def _draw_point_cloud(data, label, scale_factor, color={}):
-    if color == {}:
-        color = {0: (0,1,1), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)}
-    all_label = np.unique(label)
-    for l in all_label:
-        x = data[label == l]
-        c = color.get(l)
-        if c is None:
-            c = tuple(np.random.random(3))
-        mlab.points3d(x[:,0], x[:,1], x[:,2], color=c, scale_factor=scale_factor)
-
-def draw_point_cloud(data, subsample=None, size=1, title=''):
-    """
-    data: Nx3 numpy array
-    subsample: number of subsampled input point cloud
-    """
-    if subsample is not None:
-        ids = np.random.choice(data.shape[0], subsample, replace=False)
-        data = data[ids]
-    mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=0.01*size)
-    if title:
-        mlab.title(title)
-    mlab.show()
-
-def draw_point_cloud_with_labels(data, label, subsample=None, size=1, color={}, title=''):
-    """
-    data: Nx3 numpy array
-    label: N, numpy array
-    subsample: number of subsampled input point cloud
-    size: size of points
-    color: dict int->tuple(3)
-    """
-    if subsample is not None:
-        ids = np.random.choice(data.shape[0], subsample, replace=False)
-        data = data[ids]
-        label = label[ids]
-    _draw_point_cloud(data, label, 0.01*size, color=color)
-    if title:
-        mlab.title(title)
-    mlab.show()
+def read_pcd(pcd_filename):
+    from py_lidar_bind import get_single_point_cloud
+    pcd = get_single_point_cloud(pcd_filename)
+    pc = pcd[0]
+    intensity = pcd[1][:,0]
+    return pc, intensity
 
 
