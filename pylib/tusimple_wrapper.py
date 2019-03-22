@@ -11,7 +11,7 @@ def read_pcd(pcd_filename):
     intensity = pcd[1][:,0]
     return pc, intensity
 
-def plot_pcd(pcd_filename, num_bins=10, subsample=None, size=1, title=''):
+def plot_pcd(pcd_filename, num_bins=10, subsample=20000, size=5, title=''):
     from pcplot import plot_with_cmap
     pc, intensity = read_pcd(pcd_filename)
     plot_with_cmap(pc, intensity, num_bins=num_bins, subsample=subsample, size=size, title=title)
@@ -59,7 +59,7 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1, tmp_dir='/home/xudong.s
     extrinsic_matrices = [lidar_calibs[i]['extrinsic']['imu-0'] for i in (1,2)]
     # Loader for lidar packets to point cloud
     from py_lidar.loader import CLoader
-    from py_lidar_bind import save_point_cloud
+    from py_lidar_bind import save_point_cloud_with_data
     pc_loader = CLoader(intrinsic_file_paths, extrinsic_matrices, lidar_type='Pandar40')
     # fetch dataset
     from dataset_store import Dataset
@@ -73,13 +73,13 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1, tmp_dir='/home/xudong.s
         p = subprocess.Popen(['eog', out_path_im])
         packet_left, packet_right = data[0][1], data[1][1]
         pc = pc_loader.grab([packet_left, packet_right])[0]
+        pc, intensity = pc[:,:3], pc[:,3:]
         if pc_viewer == 'pcl_viewer':
             out_path_pc = os.path.join(tmp_dir, 'tmp.pcd')
-            save_point_cloud(pc.astype(np.float64), out_path_pc, ASCIIFlag=True)
+            save_point_cloud_with_data(pc.astype(np.float64), intensity.astype(np.float64), out_path_pc, ASCIIFlag=True)
             subprocess.call(['pcl_viewer', out_path_pc])
             os.remove(out_path_pc)
         else:
-            pc, intensity = pc[:,:3], pc[:,3]
             plot_with_cmap(pc, intensity, num_bins=num_bins, subsample=subsample, size=size, title=title)
         p.wait()
         os.remove(out_path_im)
