@@ -208,15 +208,3 @@ def point_cloud_label_to_surface_voxel_label(point_cloud, label, res=0.02):
     return uvidx, uvlabel
 
 
-######################################
-# pcd utilities
-######################################
-
-def read_pcd(pcd_filename):
-    from py_lidar_bind import get_single_point_cloud
-    pcd = get_single_point_cloud(pcd_filename)
-    pc = pcd[0]
-    intensity = pcd[1][:,0]
-    return pc, intensity
-
-

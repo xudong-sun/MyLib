@@ -22,7 +22,7 @@ def plot(data, subsample=None, size=1, title=''):
     data: Nx3 numpy array
     subsample: number of subsampled input point cloud
     """
-    if subsample is not None:
+    if subsample is not None and subsample < data.shape[0]:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
     mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=0.01*size)
@@ -38,7 +38,7 @@ def plot_with_labels(data, label, subsample=None, size=1, color={}, title=''):
     size: size of points
     color: dict int->tuple(3)
     """
-    if subsample is not None:
+    if subsample is not None and subsample < data.shape[0]:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
         label = label[ids]
@@ -47,14 +47,14 @@ def plot_with_labels(data, label, subsample=None, size=1, color={}, title=''):
         mlab.title(title)
     mlab.show()
 
-def plot_with_cmap(data, color, num_bins=50, subsample=None, size=1, title=''):
+def plot_with_cmap(data, color, num_bins=10, subsample=None, size=1, title=''):
     """
     data: Nx3 numpy array
     color: N, numpy array
     num_bins: int, discretize color into num_bins bins
     subsample: int, number of subsampled input point cloud
     """
-    if subsample is not None:
+    if subsample is not None and subsample < data.shape[0]:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
         color = color[ids]
@@ -66,14 +66,9 @@ def plot_with_cmap(data, color, num_bins=50, subsample=None, size=1, title=''):
     bins = np.linspace(-EPS, 1+EPS, num_bins+1)
     for i in xrange(num_bins):
         x = data[(color >= bins[i]) & (color < bins[i+1])]
-        c = cmap(bins[i])[:3]
+        c = cmap(1-bins[i])[:3]
         mlab.points3d(x[:,0], x[:,1], x[:,2], color=c, scale_factor=0.01*size)
     if title:
         mlab.title(title)
     mlab.show()
-
-def plot_pcd(pcd_filename, num_bins=50, subsample=None, size=1, title=''):
-    from pclib import read_pcd
-    pc, intensity = read_pcd(pcd_filename)
-    plot_with_cmap(pc, intensity, num_bins=num_bins, subsample=subsample, size=size, title=title)
 

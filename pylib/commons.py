@@ -123,6 +123,9 @@ def cprint(x, maxlen=100):
         elif isinstance(x, list):
             s = compress(s)
             info = 'list of length {}'.format(len(x))
+        elif isinstance(x, tuple):
+            s = compress(s, end=')')
+            info = 'tuple of length {}'.format(len(x))
         elif isinstance(x, set):
             s = compress(s, end='}')
             info = 'set of length {}'.format(len(x))
