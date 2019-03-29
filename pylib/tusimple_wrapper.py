@@ -36,7 +36,10 @@ def _check_fetched_ts(data, threshold=0.05):
             flag = False
     return flag
 
-def peak(vehicle, bag_name, ts_begin, camera=1, limit=1, tmp_dir='/home/xudong.sun/tmp', pc_viewer='mayavi', num_bins=10, subsample=20000, size=5, title=''):
+def peak(vehicle, bag_name, ts_begin, camera=1, limit=1,
+         x=None, y=None, z=None, intensity=None,
+         tmp_dir='/home/xudong.sun/tmp', pc_viewer='pcl_viewer',
+         num_bins=10, subsample=20000, size=5, title=''):
     """
     peak dataset (camera and lidar) at a given timestamp
     vehicle: str, vehicle name, e.g. 'Octopus-B1'
@@ -44,6 +47,7 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1, tmp_dir='/home/xudong.s
     ts_begin: str or float, timestamp, e.g. 1552603966931801600, '30:00'
     camera: int, camera id
     limit: int, number of frames to show
+    x, y, z, intensity: list of length 2, [min, max] range
     tmp_dir: save tmp files to this dir (will be cleaned)
     pc_viewer: 'mayavi' or 'pcl_viewer'
     """
@@ -73,14 +77,25 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1, tmp_dir='/home/xudong.s
         p = subprocess.Popen(['eog', out_path_im])
         packet_left, packet_right = data[0][1], data[1][1]
         pc = pc_loader.grab([packet_left, packet_right])[0]
-        pc, intensity = pc[:,:3], pc[:,3:]
+        pc, data_ = pc[:,:3], pc[:,3:]
+        # mask
+        mask = np.ones(pc.shape[0], dtype=np.bool)
+        if x is not None:
+            mask &= (pc[:,0] >= x[0]) & (pc[:,0] <= x[1])
+        if y is not None:
+            mask &= (pc[:,1] >= y[0]) & (pc[:,1] <= y[1])
+        if z is not None:
+            mask &= (pc[:,2] >= z[0]) & (pc[:,2] <= z[1])
+        if intensity is not None:
+            mask &= (data_[:,0] >= intensity[0]) & (data_[:,0] <= intensity[1])
+        pc, data_ = pc[mask], data_[mask]
         if pc_viewer == 'pcl_viewer':
             out_path_pc = os.path.join(tmp_dir, 'tmp.pcd')
-            save_point_cloud_with_data(pc.astype(np.float64), intensity.astype(np.float64), out_path_pc, ASCIIFlag=True)
+            save_point_cloud_with_data(pc.astype(np.float64), data_.astype(np.float64), out_path_pc, ASCIIFlag=True)
             subprocess.call(['pcl_viewer', out_path_pc])
             os.remove(out_path_pc)
         else:
-            plot_with_cmap(pc, intensity, num_bins=num_bins, subsample=subsample, size=size, title=title)
+            plot_with_cmap(pc, data_[:,0], num_bins=num_bins, subsample=subsample, size=size, title=title)
         p.wait()
         os.remove(out_path_im)
 
