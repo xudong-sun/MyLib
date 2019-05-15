@@ -1,3 +1,4 @@
+import os
 import numpy as np
 
 ######################################
@@ -11,10 +12,60 @@ def read_pcd(pcd_filename):
     intensity = pcd[1][:,0]
     return pc, intensity
 
-def plot_pcd(pcd_filename, num_bins=10, subsample=20000, size=5, title=''):
-    from pcplot import plot_with_cmap
-    pc, intensity = read_pcd(pcd_filename)
-    plot_with_cmap(pc, intensity, num_bins=num_bins, subsample=subsample, size=size, title=title)
+def save_pcd(filename, pc, intensity=None, label=None, ASCIIFlag=True):
+    """
+    pc: ndarray, (N, 3)
+    intensity: ndarray, (N,)
+    """
+    if intensity is None and label is None:
+        from py_lidar_bind import save_point_cloud
+        save_point_cloud(pc.astype(np.float64), filename, ASCIIFlag=ASCIIFlag)
+    else:
+        data = np.zeros((pc.shape[0], 3))
+        if intensity is not None:
+            data[:,0] = intensity
+        if label is not None:
+            data[:,2] = label
+        else:
+            data[:,2] = np.ones(pc.shape[0])
+        from py_lidar_bind import save_point_cloud_with_data
+        save_point_cloud_with_data(pc.astype(np.float64), data.astype(np.float64), filename, ASCIIFlag=ASCIIFlag)
+
+def plot_pcd(pcd_filename, bg=False):
+    import subprocess
+    cmd_args = ['pcl_viewer', pcd_filename]
+    if bg:
+        p = subprocess.Popen(cmd_args)
+        return p
+    else:
+        subprocess.call(cmd_args)
+
+def plot_pc(pc, intensity=None, label=None, bg=False):
+    """
+    bg: if True, plot pc in a separate process and return the process
+    """
+    tmp_pcd_filename = os.path.join(os.environ['HOME'], 'tmp', 'tmp.pcd')
+    save_pcd(tmp_pcd_filename, pc, intensity, label)
+    p = plot_pcd(tmp_pcd_filename, bg)
+    return p
+
+def plot_img(img, bg=False):
+    import subprocess
+    import cv2 as cv
+    tmp_img_filename = os.path.join(os.environ['HOME'], 'tmp', 'tmp.jpg')
+    cv.imwrite(tmp_img_filename, img)
+    cmd_args = ['eog', tmp_img_filename]
+    if bg:
+        p = subprocess.Popen(cmd_args)
+        return p
+    else:
+        subprocess.call(cmd_args)
+
+def plot_pc_with_image(pc, intensity=None, label=None, img=None):
+    p = plot_pc(pc, intensity, label, bg=True)
+    if img is not None:
+        plot_img(img)
+    p.wait()
 
 
 #######################################
@@ -37,9 +88,7 @@ def _check_fetched_ts(data, threshold=0.05):
     return flag
 
 def peak(vehicle, bag_name, ts_begin, camera=1, limit=1,
-         x=None, y=None, z=None, intensity=None,
-         tmp_dir='/home/xudong.sun/tmp', pc_viewer='pcl_viewer',
-         num_bins=10, subsample=20000, size=5, title=''):
+         x=None, y=None, z=None, intensity=None):
     """
     peak dataset (camera and lidar) at a given timestamp
     vehicle: str, vehicle name, e.g. 'Octopus-B1'
@@ -48,10 +97,8 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1,
     camera: int, camera id
     limit: int, number of frames to show
     x, y, z, intensity: list of length 2, [min, max] range
-    tmp_dir: save tmp files to this dir (will be cleaned)
     pc_viewer: 'mayavi' or 'pcl_viewer'
     """
-    import os
     import cv2
     import subprocess
     topics = ['/pandar_left/pandar_packets', '/pandar_right/pandar_packets', '/camera{}/image_color/compressed'.format(camera)]
@@ -68,16 +115,12 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1,
     # fetch dataset
     from dataset_store import Dataset
     ds = Dataset.open(bag_name)
-    from pcplot import plot_with_cmap
     for data in ds.fetch_aligned(*topics, ts_begin=ts_begin, limit=limit):
         _check_fetched_ts(data)
         im = cv2.imdecode(np.fromstring(data[2][1].data, np.uint8), cv2.IMREAD_COLOR)
-        out_path_im = os.path.join(tmp_dir, 'tmp.jpg')
-        cv2.imwrite(out_path_im, im)
-        p = subprocess.Popen(['eog', out_path_im])
         packet_left, packet_right = data[0][1], data[1][1]
         pc = pc_loader.grab([packet_left, packet_right])[0]
-        pc, data_ = pc[:,:3], pc[:,3:]
+        pc, intensity = pc[:,:3], pc[:,3]
         # mask
         mask = np.ones(pc.shape[0], dtype=np.bool)
         if x is not None:
@@ -88,14 +131,6 @@ def peak(vehicle, bag_name, ts_begin, camera=1, limit=1,
             mask &= (pc[:,2] >= z[0]) & (pc[:,2] <= z[1])
         if intensity is not None:
             mask &= (data_[:,0] >= intensity[0]) & (data_[:,0] <= intensity[1])
-        pc, data_ = pc[mask], data_[mask]
-        if pc_viewer == 'pcl_viewer':
-            out_path_pc = os.path.join(tmp_dir, 'tmp.pcd')
-            save_point_cloud_with_data(pc.astype(np.float64), data_.astype(np.float64), out_path_pc, ASCIIFlag=True)
-            subprocess.call(['pcl_viewer', out_path_pc])
-            os.remove(out_path_pc)
-        else:
-            plot_with_cmap(pc, data_[:,0], num_bins=num_bins, subsample=subsample, size=size, title=title)
-        p.wait()
-        os.remove(out_path_im)
+        pc, intensity = pc[mask], intensity[mask]
+        plot_pc_with_image(pc, intensity, None, im)
 

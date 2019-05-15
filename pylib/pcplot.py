@@ -2,13 +2,18 @@
 # plot point cloud with mayavi.mlab
 #########################################
 
+import os
+import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from mayavi import mlab
 
 def _plot_color(data, label, scale_factor, color={}):
     if color == {}:
-        color = {0: (0,1,1), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)}
+        color = {0: (0,1,1), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0),
+                 4: (0,0,1), 5: (1,0,1), 6: (0.4, 0.7, 0.6), 7: (0.5, 0, 0.6),
+                 8: (0.99, 0.88, 0.55), 9: (0.96, 0.4, 0.3), 10: (0.6, 0, 0.2),
+                 11: (0,1,0.8)}
     all_label = np.unique(label)
     for l in all_label:
         x = data[label == l]
@@ -30,7 +35,7 @@ def plot(data, subsample=None, size=1, title=''):
         mlab.title(title)
     mlab.show()
 
-def plot_with_labels(data, label, subsample=None, size=1, color={}, title=''):
+def plot_with_labels(data, label, subsample=None, size=1, color={}, title='', img=None, img_path=None):
     """
     data: Nx3 numpy array
     label: N, numpy array
@@ -38,6 +43,11 @@ def plot_with_labels(data, label, subsample=None, size=1, color={}, title=''):
     size: size of points
     color: dict int->tuple(3)
     """
+    if img is not None:
+        img_path = os.path.join(os.environ['HOME'], 'tmp', 'tmp.jpg')
+        cv.imwrite(img_path, img)
+    if img_path is not None:
+        p = subprocess.Popen(['eog', img_path])
     if subsample is not None and subsample < data.shape[0]:
         ids = np.random.choice(data.shape[0], subsample, replace=False)
         data = data[ids]
@@ -46,6 +56,8 @@ def plot_with_labels(data, label, subsample=None, size=1, color={}, title=''):
     if title:
         mlab.title(title)
     mlab.show()
+    if img_path is not None:
+        p.wait()
 
 def plot_with_cmap(data, color, num_bins=10, subsample=None, size=1, title=''):
     """

@@ -81,11 +81,13 @@ def get_timestamp():
     from datetime import datetime
     return datetime.now().strftime('%Y_%m_%d_%H:%M:%S')
 
-def wait_for_key_input(valid_keys=['']):
+def wait_for_key_input(prompt='', valid_keys=['']):
     '''wait for user typing a specific set of keys
     valid_keys: list[str]
     returns: user-typed key
     '''
+    if prompt:
+        print(prompt)
     while True:
         key = raw_input()
         if key in valid_keys: break

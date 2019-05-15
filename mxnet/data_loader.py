@@ -17,7 +17,10 @@ class BaseLoader(mx.io.DataIter):
         num_workers: number of worker processes to read data. Multiple workers mode is only supported in training phase.
         prefetch_ratio: this determines the size of the prefetch queue in terms of batch_size
         cached_dataset: if specified, will use the cached dataset instead of reading from disk. The cached dataset is a list of (data, label). If cached_dataset is specified, this will override include_trailing, num_workers, prefetch_ratio.
-        To extend this base loader, implement _set_input_shapes(), _read_dataset(), _get_item()
+        
+        To extend this base loader:
+        1. implement _set_input_shapes(), _read_dataset(), _get_item()
+        2. call start_workers() in the constructor to enable multiple workers mode.
         """
         self.root = root
         self.batch_size = batch_size
@@ -113,7 +116,7 @@ class BaseLoader(mx.io.DataIter):
         raise NotImplementedError
 
     def _read_cached_dataset(self):
-        self.dataset = utils.pickle_from_file(self.cached_dataset)
+        self.dataset = pickle_from_file(self.cached_dataset)
 
     @property
     def provide_data(self):
@@ -130,7 +133,7 @@ class BaseLoader(mx.io.DataIter):
             raise StopIteration
 
     def _get_item(self, index):
-        """ get inputs without using cache
+        """ get inputs without using cache, apply augmentation if necessary
         index: index for self.dataset
         returns: a tuple of (data, label), with shapes specified as self.data_shape, self.label_shape
         """
