@@ -81,15 +81,17 @@ def get_timestamp():
     from datetime import datetime
     return datetime.now().strftime('%Y_%m_%d_%H:%M:%S')
 
-def wait_for_key_input(valid_keys=['']):
+def wait_for_key_input(prompt='', valid_keys=['']):
     '''wait for user typing a specific set of keys
     valid_keys: list[str]
     returns: user-typed key
     '''
+    if prompt:
+        print(prompt)
     while True:
         key = input()
         if key in valid_keys: break
-        else: print('Valid keys are', valid_keys)
+        else: print('Valid keys are ' + str(valid_keys))
     return key
 
 def simple_logger():
@@ -104,9 +106,45 @@ def simple_logger():
     logger.setLevel(logging.INFO)
     return logger
 
+def cprint(x, maxlen=100):
+    """ print x in a concise way
+    """
+    import numpy as np
+    s = repr(x)
+    info = ''
+    def compress(s, sep=',', end=']'):
+        pos = s[:maxlen].rfind(sep)
+        s = s[:pos+1] + ' ... ' + end
+        return s
+    if len(s) > maxlen:
+        if isinstance(x, dict):
+            s = 'dict with keys ' + repr(x.keys())
+            if len(s) > maxlen:
+                s = compress(s)
+                info = 'number of keys = {}'.format(len(x.keys()))
+        elif isinstance(x, list):
+            s = compress(s)
+            info = 'list of length {}'.format(len(x))
+        elif isinstance(x, tuple):
+            s = compress(s, end=')')
+            info = 'tuple of length {}'.format(len(x))
+        elif isinstance(x, set):
+            s = compress(s, end='}')
+            info = 'set of length {}'.format(len(x))
+        elif isinstance(x, np.ndarray):
+            s = compress(s)
+            info = 'np.ndarray of shape {}'.format(x.shape)
+        elif isinstance(s, str):
+            s = s[:maxlen] + '...'
+            info = 'str of length {}'.format(len(x))
+    if len(info) > 0:
+        s += '\n' + info
+    print(s)
+
 class Timer(object):
     '''A simple timer for calculating average speed
     '''
+    global time
     import time
     def __init__(self):
         self.reset()
@@ -120,4 +158,50 @@ class Timer(object):
     def reset(self):
         self.time = 0
         self.count = 0
+
+def no_args_decorator(f):
+    """ A decorator for decorators
+    This decorator allows the decorated decorator used both in the form of @decorator(arguments) and @decorator.
+    In the second case, the default arguments will be applied.
+    The only restriction is that, the decorator cannot take a single callable as its arguments.
+    """
+    def g(*args, **kwargs):
+        if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+            return f()(args[0])  # second case
+        else:
+            return f(*args, **kwargs)  # first case
+    return g
+
+@no_args_decorator
+def timeit(freq=1, rep=1):
+    """ Decorator for calculating average runtime
+    freq: int, print average runtime after every `freq` calls to the original function
+          if freq=0, will never print automatically, but you can always call func.avg_time to check average runtime
+    rep: int, repeatedly call func `rep` times to calculate the average runtime. If rep > 1, this will override freq and set freq = rep
+    """
+    import time
+    if rep > 1: freq = rep
+    class decorator(object):
+        def __init__(self, func):
+            from functools import update_wrapper
+            update_wrapper(self, func)
+            self.func = func
+            self.total = 0.
+            self.count = 0
+        def __call__(self, *args, **kwargs):
+            start = time.time()
+            for _ in range(rep):
+                rv = self.func(*args, **kwargs)
+            self.total += time.time() - start
+            self.count += rep
+            if freq > 0 and self.count % freq == 0:
+                print("Called {}() {} times, average runtime = {} s".format(self.__name__, self.count, self.avg_time))
+            return rv
+        def __get__(self, instance, owner):
+            from functools import partial
+            return partial(self.__call__, instance)
+        @property
+        def avg_time(self):
+            return self.total / self.count
+    return decorator
 

@@ -1,5 +1,4 @@
 import numpy as np
-from mayavi import mlab
 
 
 #################################
@@ -207,43 +206,5 @@ def point_cloud_label_to_surface_voxel_label(point_cloud, label, res=0.02):
     uvidx, vpidx = np.unique(vidx, return_index=True)
     uvlabel = label[vpidx]
     return uvidx, uvlabel
-
-
-#########################################
-# plot point cloud with mayavi.mlab
-#########################################
-
-def _draw_point_cloud(data, label, scale_factor=0.01):
-    all_label = np.unique(label)
-    for l in all_label:
-        x = data[label == l]
-        color = tuple(np.random.random(3))
-        mlab.points3d(x[:,0], x[:,1], x[:,2], color=color, scale_factor=scale_factor)
-
-def draw_point_cloud(data, subsample=None, scale_factor=0.01, title=''):
-    """
-    data: Nx3 numpy array
-    subsample: number of subsampled input point cloud
-    """
-    if subsample is not None:
-        ids = np.random.choice(data.shape[0], subsample, replace=False)
-        data = data[ids]
-    mlab.points3d(data[:,0], data[:,1], data[:,2], scale_factor=scale_factor)
-    mlab.title(title)
-    mlab.show()
-
-def draw_point_cloud_with_labels(data, label, subsample=None, scale_factor=0.01, title=''):
-    """
-    data: Nx3 numpy array
-    label: N, numpy array
-    subsample: number of subsampled input point cloud
-    """
-    if subsample is not None:
-        ids = np.random.choice(data.shape[0], subsample, replace=False)
-        data = data[ids]
-        label = label[ids]
-    _draw_point_cloud(data, label, scale_factor)
-    mlab.title(title)
-    mlab.show()
 
 
