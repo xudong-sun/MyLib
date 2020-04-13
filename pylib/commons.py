@@ -38,15 +38,15 @@ def remove_dir(dir_):
 
 def pickle_to_file(object_, file_):
     '''pickle object_ to file_'''
-    import cPickle
+    import pickle
     import os
     assure_dir(os.path.dirname(file_))
-    with open(file_, 'wb') as fout: cPickle.dump(object_, fout)
+    with open(file_, 'wb') as fout: pickle.dump(object_, fout)
 
 def pickle_from_file(file_):
     '''load object from file_. returns the object'''
-    import cPickle
-    with open(file_, 'rb') as fin: object_ = cPickle.load(fin)
+    import pickle
+    with open(file_, 'rb') as fin: object_ = pickle.load(fin)
     return object_
 
 def generate_files_within_dir(root_dir, exts=None, FILTER="True", followlinks=True):
@@ -87,9 +87,9 @@ def wait_for_key_input(valid_keys=['']):
     returns: user-typed key
     '''
     while True:
-        key = raw_input()
+        key = input()
         if key in valid_keys: break
-        else: print 'Valid keys are', valid_keys
+        else: print('Valid keys are', valid_keys)
     return key
 
 def simple_logger():
